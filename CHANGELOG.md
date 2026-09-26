@@ -2,6 +2,22 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [0.6.0] - 2026-09-26
+
+按 ZCode 源码重做前后端，只保留「链接多个设备」的定位。
+
+### Changed
+- 连接方式改为直接连接电脑上的 `zcode --web`（`http(s)://主机:端口/?token=…`），使用 ZCode 自己的 WebSocket Channel RPC 与 Conversation V4 协议，不再经过云端中继，消除中继带来的卡顿。
+- 全新协议层：`@zcode/rpc` 编解码 / 分帧 / ChannelClient 的 Dart 移植；V4 物理帧重组（分片 + CRC32）、ACK 前初始帧暂存、快照 / 增量水位、断档同订阅 resync、重连后带水位续订。
+- 连接：原生 WebSocket ping 心跳、指数退避重连、回到前台主动探活、令牌失效提示更新链接；所有设备后台同时在线，切换即时。
+- 任务列表按 ZCode 侧栏逻辑合并 tasks-index（置顶 / 归档 / 删除 / 未读）与 sessions-index（实时状态）。
+- 界面按 ZCode 设计系统重做：Zai Light / Zai Dark 语义色、字号与圆角层级，手机单栏 + 抽屉、平板侧栏分栏；对话按「用户消息 / 已工作 … / 最终回答」分组；Composer 工具栏含模式、模型、思考档位。
+- 权限请求、AskUserQuestion 多题问答、输入请求的回答格式与 ZCode 一致；支持排队、暂停队列选择、停止、重试、编辑、反馈、压缩上下文、重命名。
+
+### Removed
+- 旧版中继链接（`zcode.z.ai/remote/v4`）与配对协议。
+- 与 ZCode 无关的附加功能：语音输入、自动化、用量 / 供应商管理页、RPC 调试器、应用内更新、后台常驻通知。
+
 ## [0.5.3-beta.5] - 2026-09-11
 
 ### Fixed

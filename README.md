@@ -2,235 +2,103 @@
 
 # Zemote
 
-**手机/平板上的 ZCode 远程控制客户端** — 独立复刻官方 Web 远程控制协议（protocol reimplementation）
+**ZCode Web 的多设备移动客户端** — 把多台电脑上的 `zcode --web` 链接加进来，在手机 / 平板上同时驱动它们的任务与对话。
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.5%2B-blue.svg?logo=flutter)](https://flutter.dev)
-[![Dart](https://img.shields.io/badge/Dart-3.5%2B-0175C2.svg?logo=dart)](https://dart.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-blue.svg?logo=flutter)](https://flutter.dev)
 [![CI](https://github.com/HumanAILoop/zemote/actions/workflows/build-apk.yml/badge.svg)](https://github.com/HumanAILoop/zemote/actions/workflows/build-apk.yml)
-[![Release](https://img.shields.io/github/v/release/HumanAILoop/zemote)](https://github.com/HumanAILoop/zemote/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20Web%20%7C%20Windows-lightgrey.svg)](#平台)
-
-在手机/平板上**同时管理多台桌面设备**：扫码或粘贴链接添加设备 → 连接桌面 ZCode → 浏览任务列表、收发对话、查看文件变更、管理模型供应商与用量配额。
-
-> ⚠️ 本项目为**协议复刻**，与官方客户端无任何代码关联。请遵守 ZCode 服务条款与当地法律法规，仅用于连接你自己的设备。
 
 </div>
 
 ---
 
-## 目录
+## 它是什么
 
-- [反馈与 AI 自动修复](#反馈与-ai-自动修复)
-- [功能特性](#功能特性)
-- [平台](#平台)
-- [快速开始](#快速开始)
-- [更新与签名](#更新与签名)
-- [架构](#架构)
-- [测试](#测试)
-- [项目结构](#项目结构)
-- [安全提示](#安全提示)
-- [技术栈](#技术栈)
-- [贡献](#贡献)
-- [Changelog](#changelog)
-- [License](#license)
+ZCode 的命令行发行包自带 Web 模式：`zcode --web` 会在电脑上启动一个 HTTP + WebSocket 服务，并打印一条带访问令牌的链接。ZCode 自己的 Web 界面是为桌面浏览器设计的，在手机上并不好用，而且一次只能打开一台电脑。
 
----
+Zemote 做两件事：
 
-## 反馈与 AI 自动修复
-
-**欢迎大家提交 [Issue](https://github.com/HumanAILoop/zemote/issues)！** 🎉
-
-无论是 Bug 反馈、功能建议，还是界面 / 交互体验问题，都欢迎通过 Issue 提出。本项目采用 **AI 全自动修复** 流程：你提交的 Issue 会被自动分析、定位、修复，并随新的 Beta 版本发布，通常无需人工介入。
-
-为了让自动修复更准确、更快，建议在 Issue 中尽量写清楚：
-
-- **问题现象**：发生了什么，你期望发生什么
-- **复现步骤**：怎样稳定复现
-- **环境信息**：设备型号、Android 版本、App 版本（设置页可见）
-- **相关日志 / 截图**：可在设置页「诊断中心 / 协议日志」中导出
-
-提交后请留意 Issue 回复与新的 Beta Release。
-
----
-
-## 功能特性
-
-### 多设备并发
-- 多台设备可同时在线，一键切换无需重连
-- 设备列表独立显示每台的连接状态（连接中 / 已连接 / 错误）
-- 顶部设备切换栏随时跳转，未连接设备可直接连接或添加新设备
-
-### 添加设备
-- 扫码（`mobile_scanner`）或粘贴远程控制 URL（`https://zcode.z.ai/remote/v4?sid=...&hash=...&t=...`）
-
-### 任务管理
-- 任务 / 置顶 / 已归档三栏，搜索过滤、下拉刷新、滑动置顶/归档、重命名、删除
-- 实时订阅 `sessions-index`，与 workspace-list 推送合并去重
-- 未读标记、最近预览文本、运行状态点
-
-### 对话（Conversation V4）
-- 流式回复、推理过程展示、斜杠命令（`/`）、Skills（`$`）、模型/模式/思考级别切换
-- **辅助对话**：为当前会话开启独立侧对话（`createSelectionSideSession`），互不干扰并行提问
-- 排队消息管理、目标（goal）指令、暂停/恢复
-- 附件上传/预览、文件变更 diff、文件回滚、编辑用户消息、点赞/点踩
-
-### 协议层
-完整复刻官方 relay 握手、配对证明（HMAC-SHA256）、rpc-frame 分片传输（CRC32 校验 + ack）、IPC 值编解码、V4 快照/增量协议。
-
-### 调试工具
-- 协议日志页（relay / IPC / V4 帧）
-- RPC（relay payload）调试器
-- Channel RPC 调试器
-
-### 其他
-- 模型供应商管理（添加/启停/删除）、用量/配额/订阅查看
-- 浅色/深色/跟随系统主题、字体缩放、中英双语
-- **更新检测**：启动自动检查 GitHub 最新发布，Android 端一键下载 APK 并调用系统安装器升级
-- **后台任务通知（Android）**：任务运行中时通知栏静默常驻并实时更新最新进展；任务完成静默提醒（不弹窗打扰）；点击通知直达对应对话
-
-## 平台
-
-| 平台 | 状态 |
-|------|------|
-| Android | ✅ 主要目标平台 |
-| Web | ✅ 可用（调试 / 快速预览） |
-| Windows | ⚙️ 桌面端可用（未重点优化） |
-| iOS / macOS / Linux | 未验证（理论上可构建） |
+1. **多设备**：保存任意多条 ZCode Web 链接，所有设备在后台同时保持连接，一键切换，列表里实时显示每台设备的在线状态、延迟以及正在运行 / 等待确认的任务数。
+2. **按 ZCode 重做的移动端**：直接说 ZCode 自己的协议（`@zcode/rpc` 的 WebSocket Channel RPC + Conversation V4），界面沿用 ZCode 的设计系统（Zai Light / Zai Dark 语义色、`text-ui-*` 字号、圆角层级、「已工作 …」折叠、Composer 工具栏），手机上是 ZCode 移动端的单栏 + 抽屉布局，平板 / 桌面宽屏是侧栏 + 对话的分栏布局。
 
 ## 快速开始
 
-### 前置条件
-
-- Flutter SDK（本项目 `sdk: ^3.5.0`）
-- 桌面端已安装并打开 **ZCode**（zcode.z.ai）
-
-### 获取远程控制 URL
-
-桌面 ZCode → 远程控制 → 生成二维码 / 复制链接，形如：
-
-```
-https://zcode.z.ai/remote/v4?sid=...&hash=...&t=...&mid=...&name=...
-```
-
-### 运行
+在电脑上：
 
 ```bash
-# Android
-flutter run
+# 监听局域网；非本机地址会自动生成访问令牌
+zcode --web --host 0.0.0.0 --workspace /path/to/project
 
-# Web（快速预览）
-flutter run -d chrome
-
-# Windows
-flutter run -d windows
+# 建议固定令牌，否则每次重启都会生成新令牌、需要在手机上更新链接
+zcode --web --host 0.0.0.0 --token "$(openssl rand -base64 24)"
 ```
 
-应用内：**添加设备** → 扫码或粘贴 URL → 连接桌面 → 完成配对 → 进入任务列表。
+终端会打印：
 
-### 构建 APK
-
-```bash
-flutter build apk --split-per-abi
-# 产物：arm64-v8a / armeabi-v7a / x86_64 三种 APK
+```
+ZCode Web is running
+Local:   http://127.0.0.1:3030/?token=…
+Network: http://192.168.1.8:3030/?token=…
 ```
 
-## 更新与签名
+在 Zemote 里：**添加设备** → 粘贴 `Network` 链接（或扫描包含该链接的二维码）→ 保存。可以重复添加多台电脑。
 
-- 应用内置**更新检测**：按设备 CPU 自动选择 APK，支持断点续传、缓存安装包直装、MD5 校验和安装完成后自动清理。
-- 发布流程：在 `main` 上打好代码 → 提交 → `git tag vX.Y.Z` → 推送。GitHub Actions 自动执行 `flutter analyze` + `flutter test`，并构建上传三种 CPU 架构的统一签名 APK 与对应 MD5。
-- 签名说明：release APK 使用正式 keystore 签名（本地 `android/key.properties` + CI Secrets），保证覆盖安装与持续更新可用。详见 `.github/workflows/build-apk.yml`。
+> 旧版中继链接（`https://zcode.z.ai/remote/v4?sid=…&hash=…`）已不再支持。
+
+## 功能
+
+- **设备**：多设备并发在线、状态 / 延迟 / 活跃任务徽标、断线指数退避重连（1s → 15s）、回到前台时主动探活并立即重连、令牌失效时提示更新链接；链接在 Android 上以 Keystore AES-GCM 加密保存。
+- **任务列表**（与 ZCode 侧栏一致）：tasks-index 决定持久成员（任务 / 置顶 / 已归档 / 已删除 / 未读），sessions-index 提供实时状态（运行中、等待确认、出错）；搜索、置顶、归档、删除。
+- **对话**：Conversation V4 快照 + 增量实时同步，流式正文与思考过程、工具调用（命令、文件 diff、输出）、子代理、时间线标记；每轮按 ZCode 的方式分成用户消息、「已工作 …」折叠区与最终回答；向上滚动按需加载更早的消息；复制、重试、编辑用户消息、点赞 / 点踩。
+- **交互**：权限请求（允许 / 始终允许 / 拒绝 + 反馈）、AskUserQuestion 多题问答（含自动结束暂停）、普通输入请求，回答格式与 ZCode 完全一致。
+- **Composer**：新建任务（`createSession` + 首条消息）、后续消息、运行中排队、暂停队列时的「清空 / 保留队列」选择、停止、模式（变更前确认 / 自动编辑 / 计划模式 / 完全访问）、模型与思考档位切换、队列管理、后台任务。
+- **其他**：中英双语、浅色 / 深色 / 跟随系统、字体大小、连接日志。
 
 ## 架构
 
 ```
-┌────────────────────────────────────────────────────────────┐
-│ UI (lib/ui)     设备列表 / 任务 / 对话 / 设置 / 调试器        │
-├────────────────────────────────────────────────────────────┤
-│ State (lib/state)  AccountStore · AppSession · LogStore    │
-├────────────────────────────────────────────────────────────┤
-│ Facade (lib/protocol/zemote_client.dart)                    │
-│   relay → 配对 → bootstrap → workspace-bridge → channel RPC │
-├────────────────────────────────────────────────────────────┤
-│ Protocol (纯 Dart，可单测)                                  │
-│   RelayClient · RpcFrameTransport · ChannelClient           │
-│   IpcCodec · Conversation(V4) · Proof(HMAC-SHA256)          │
-└────────────────────────────────────────────────────────────┘
+lib/
+├── core/                         与 UI 无关、可单测
+│   ├── rpc/                      @zcode/rpc 的 Dart 移植
+│   │   ├── serialization.dart    值编解码（tag + VQL，JSON 回退，嵌套字节标记）
+│   │   ├── socket_protocol.dart  13 字节帧头的 SocketProtocol 分帧
+│   │   └── channel_client.dart   ChannelClient：call / listen / cancel / dispose
+│   ├── connection/               WebSocket 连接（原生 10s ping 心跳）、重连、探活
+│   ├── link/device_link.dart     `zcode --web` 链接解析（/api/server-info、/ws?token=）
+│   ├── zcode/                    服务门面（zcode-agent / zcode-task / model-selection）
+│   └── v4/                       Conversation V4
+│       ├── wire_assembler.dart   物理帧 → 逻辑帧（分片、CRC32、序号去重、超时）
+│       ├── topic_router.dart     按 topic 路由；ACK 前到达的初始帧先暂存
+│       ├── synced_topic.dart     快照 / 增量水位、断档 resync、重连后带 base 续订
+│       ├── sessions_index_store.dart
+│       └── conversation_store.dart  apply.ts 的增量代数 + V4 命令信封
+├── state/                        设备注册表、每设备会话、任务列表、模型目录
+└── ui/                           按 ZCode 设计系统重做的界面
 ```
 
-协议分层示意：
+为什么更流畅：旧版经由云端中继并在应用层做分片确认；现在手机直接与电脑上的 ZCode Web 服务建立 WebSocket，走与 ZCode 浏览器端相同的 Channel RPC。流式增量按微任务合并为一次重绘，未变化的对话轮复用同一个 Widget 实例，只有正在输出的那一轮会重建。
 
-| 层 | 职责 |
-|---|---|
-| `connection_params.dart` | 远程控制 URL 解析 + relay WS 地址 |
-| `proof.dart` | 配对证明（HMAC-SHA256 / base64url） |
-| `relay_client.dart` | relay WebSocket 连接 + 心跳 + 重连 |
-| `rpc_transport.dart` | rpc-frame 分片/重组/CRC32 校验/ack |
-| `ipc_codec.dart` | 值编解码 + 13 字节 IPC 帧解析 |
-| `channel_client.dart` | IPC channel RPC 调用/事件订阅 |
-| `conversation.dart` | Conversation V4 / sessions-index 快照+增量 |
-| `zemote_client.dart` | 高层门面：bootstrap / bridge / 断线恢复 |
-
-## 测试
+## 开发
 
 ```bash
-# 单元测试（协议编解码 / 状态机 / delta 应用 / 更新检测等）
-flutter test
+flutter pub get
+flutter analyze
+flutter test                       # 协议、存储、链接解析、分组、启动流程
 
-# 集成测试：需要真实桌面 + 自己的远程控制 URL，通过环境变量注入
-$env:ZEMOTE_PROBE_URL="https://zcode.z.ai/remote/v4?sid=..."
-flutter test integration_test
+# 端到端：对一台真实的 ZCode Web 服务运行（需要已配置模型）
+ZEMOTE_TEST_LINK='http://127.0.0.1:3030/?token=…' flutter test test/live_server_test.dart
+
+flutter run                        # Android
+flutter build apk --split-per-abi
 ```
 
-## 项目结构
-
-```
-lib/
-├── main.dart                 # 应用入口 + 主题/字号注入 + 启动更新检测
-├── protocol/                 # ZCode 协议复刻（纯 Dart，可单测）
-├── state/                    # 应用状态（多设备账号 / 连接管理 / 日志）
-├── ui/                       # 界面（设备 / 任务 / 对话 / 设置 / 调试器）
-└── update/                   # 更新检测 + Android 下载安装
-test/                         # 单元测试
-integration_test/             # 对真实桌面的集成测试（需 ZEMOTE_PROBE_URL）
-```
+Web 构建可用于调试，但浏览器会拦截跨域的 `/api/server-info`（ZCode 服务不带 CORS 头），需要与 ZCode 服务同源部署。
 
 ## 安全提示
 
-- 远程控制 URL 包含设备凭据（`sid` / `hash`），相当于设备的访问凭证，**切勿提交到版本库或分享给他人**。
-- 集成测试通过环境变量 `ZEMOTE_PROBE_URL` 注入 URL，不写死在测试代码里；`.gitignore` 已忽略 `.env`、`*.remote.*`、签名文件（`*.jks` / `key.properties`）等。
-- 如凭据意外泄露，请在桌面端 ZCode 中重新生成远程控制二维码（旧凭据立即失效）。
-
-## 技术栈
-
-- [Flutter](https://flutter.dev) / Dart
-- [web_socket_channel](https://pub.dev/packages/web_socket_channel) — relay 长连接
-- [crypto](https://pub.dev/packages/crypto) — HMAC-SHA256 配对证明
-- [mobile_scanner](https://pub.dev/packages/mobile_scanner) — 扫码
-- [zxing2](https://pub.dev/packages/zxing2) — 纯 Dart 二维码解码（图片识别）
-- [shared_preferences](https://pub.dev/packages/shared_preferences) — 账号持久化
-- [image_picker](https://pub.dev/packages/image_picker) / [file_picker](https://pub.dev/packages/file_picker) — 附件
-- [flutter_markdown](https://pub.dev/packages/flutter_markdown) — Markdown 渲染
-- [http](https://pub.dev/packages/http) — 更新检测（GitHub Releases API）
-
-## 贡献
-
-欢迎提交 [Issue](https://github.com/HumanAILoop/zemote/issues) 与 Pull Request。
-
-- **提交 Issue**：最省事的方式。问题会被 **AI 全自动分析并修复**，详见 [反馈与 AI 自动修复](#反馈与-ai-自动修复)。
-- **提交 Pull Request**：贡献代码前请确保：
-  1. `flutter analyze` 无告警
-  2. `flutter test` 全部通过
-  3. 集成测试改动需注明需要真实桌面环境
-
-## Changelog
-
-版本变更记录见 [CHANGELOG.md](CHANGELOG.md)。
+- 链接中的 `token` 等同于这台电脑上 ZCode 的完全访问权限，切勿分享。
+- `zcode --web` 默认是明文 HTTP，只建议在可信局域网或 VPN（如 Tailscale）内使用；跨公网请放在 HTTPS 反向代理之后（Zemote 支持 `https://…/子路径/?token=…`）。
 
 ## License
 
 [MIT](LICENSE)
-
-## 免责声明
-
-本项目为个人学习与互操作目的，对 ZCode 远程控制协议的独立复刻，非官方出品。使用者须自行承担风险与合规责任。

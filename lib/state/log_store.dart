@@ -1,32 +1,26 @@
-import 'dart:collection';
-
 import 'package:flutter/foundation.dart';
 
-/// Global in-memory protocol log.
+/// Small in-memory ring buffer of connection/protocol events, shown on the
+/// diagnostics page.
 class LogStore extends ChangeNotifier {
-  static final LogStore instance = LogStore._();
+  LogStore({this.capacity = 500});
 
-  LogStore._();
+  final int capacity;
+  final List<String> _lines = [];
 
-  static const maxEntries = 2000;
-
-  final ListQueue<String> _entries = ListQueue();
-
-  List<String> get entries => List.unmodifiable(_entries);
+  List<String> get lines => List.unmodifiable(_lines);
 
   void add(String line) {
-    final ts = DateTime.now().toString().substring(11, 23);
-    _entries.addLast('$ts $line');
-    while (_entries.length > maxEntries) {
-      _entries.removeFirst();
-    }
+    final now = DateTime.now();
+    String two(int v) => v.toString().padLeft(2, '0');
+    _lines.add('${two(now.hour)}:${two(now.minute)}:${two(now.second)} $line');
+    if (_lines.length > capacity) _lines.removeRange(0, _lines.length - capacity);
+    if (kDebugMode) debugPrint(line);
     notifyListeners();
   }
 
   void clear() {
-    _entries.clear();
+    _lines.clear();
     notifyListeners();
   }
 }
-
-void log(String line) => LogStore.instance.add(line);
